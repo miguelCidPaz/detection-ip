@@ -1,0 +1,27 @@
+#Archivos generados por Maven
+target/
+*.jar
+*.war
+
+#Archivos de logs y configuración local
+*.log
+logs/
+*.pid
+*.seed
+hs_err_pid*
+
+#Configuración de entorno (asegura no subir credenciales)
+*.env
+application.properties
+application.yml
+
+#Archivos específicos de IDEs (IntelliJ, Eclipse, VSCode)
+.idea/
+*.iml
+.vscode/
+*.classpath
+*.project
+*.settings/
+
+#Archivos de Docker (si no los quieres en el repo)
+docker-compose.override.yml
