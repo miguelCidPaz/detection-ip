@@ -11,12 +11,15 @@ BEGIN
     fecha_inicio := DATE_TRUNC('month', NEW.fecha);
     fecha_fin := fecha_inicio + INTERVAL '1 month';
 
-    -- Verificar si la partición existe correctamente
     IF NOT EXISTS (
-        SELECT 1 FROM pg_inherits 
+        SELECT 1 
+        FROM pg_inherits 
         JOIN pg_class parent ON parent.oid = pg_inherits.inhparent
+        JOIN pg_namespace nsp ON parent.relnamespace = nsp.oid
         JOIN pg_class child ON child.oid = pg_inherits.inhrelid
-        WHERE parent.relname = 'actividad_ips' AND child.relname = nombre_particion
+        WHERE parent.relname = 'actividad_ips' 
+        AND nsp.nspname = 'deteccion_ip' 
+        AND child.relname = nombre_particion
     ) THEN
         BEGIN
             EXECUTE format(
@@ -25,12 +28,10 @@ BEGIN
                 nombre_particion, fecha_inicio, fecha_fin
             );
         EXCEPTION WHEN others THEN
-            -- Manejo de concurrencia: si falla porque otro proceso creó la partición, ignorar el error
             NULL;
         END;
     END IF;
 
-    -- Insertar en la partición correcta
     EXECUTE format(
         'INSERT INTO deteccion_ip.%I (id, ip_hash, user_id, fecha, evento, metadata) 
          VALUES ($1, $2, $3, $4, $5, $6)', 
