@@ -8,7 +8,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 class DetectionIpApplicationTests {
 
 	@Test
-	@Disabled // <---- Agregar esto para deshabilitarlo temporalmente
 	void contextLoads() {
 	}
 

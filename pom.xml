@@ -95,6 +95,12 @@
 		    <version>1.51.0</version>
 		</dependency>
 
+		<!-- Herramienta para manejo BD -->
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-database-postgresql</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>
