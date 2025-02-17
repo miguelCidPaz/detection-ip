@@ -1,3 +1,5 @@
+-- V1: Creación de esquema y tablas iniciales
+
 -- Crear el schema si no existe
 CREATE SCHEMA IF NOT EXISTS deteccion_ip;
 
