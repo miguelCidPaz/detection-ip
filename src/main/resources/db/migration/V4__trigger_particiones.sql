@@ -1,3 +1,4 @@
+DROP TRIGGER IF EXISTS actividad_ips_particiones ON deteccion_ip.actividad_ips;
 DROP FUNCTION IF EXISTS deteccion_ip.crear_particion_actividad_ips CASCADE;
 
 CREATE OR REPLACE FUNCTION deteccion_ip.crear_particion_actividad_ips()
@@ -11,27 +12,21 @@ BEGIN
     fecha_inicio := DATE_TRUNC('month', NEW.fecha);
     fecha_fin := fecha_inicio + INTERVAL '1 month';
 
+    -- Verificar si la partición existe
     IF NOT EXISTS (
-        SELECT 1 
-        FROM pg_inherits 
+        SELECT 1 FROM pg_inherits 
         JOIN pg_class parent ON parent.oid = pg_inherits.inhparent
-        JOIN pg_namespace nsp ON parent.relnamespace = nsp.oid
         JOIN pg_class child ON child.oid = pg_inherits.inhrelid
-        WHERE parent.relname = 'actividad_ips' 
-        AND nsp.nspname = 'deteccion_ip' 
-        AND child.relname = nombre_particion
+        WHERE parent.relname = 'actividad_ips' AND child.relname = nombre_particion
     ) THEN
-        BEGIN
-            EXECUTE format(
-                'CREATE TABLE deteccion_ip.%I PARTITION OF deteccion_ip.actividad_ips 
-                 FOR VALUES FROM (%L) TO (%L)', 
-                nombre_particion, fecha_inicio, fecha_fin
-            );
-        EXCEPTION WHEN others THEN
-            NULL;
-        END;
+        EXECUTE format(
+            'CREATE TABLE deteccion_ip.%I PARTITION OF deteccion_ip.actividad_ips 
+             FOR VALUES FROM (%L) TO (%L)', 
+            nombre_particion, fecha_inicio, fecha_fin
+        );
     END IF;
 
+    -- Insertar en la partición correcta
     EXECUTE format(
         'INSERT INTO deteccion_ip.%I (id, ip_hash, user_id, fecha, evento, metadata) 
          VALUES ($1, $2, $3, $4, $5, $6)', 
@@ -41,8 +36,6 @@ BEGIN
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS actividad_ips_particiones ON deteccion_ip.actividad_ips;
 
 CREATE TRIGGER actividad_ips_particiones
 BEFORE INSERT ON deteccion_ip.actividad_ips
