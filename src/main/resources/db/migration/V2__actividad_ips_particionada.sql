@@ -5,7 +5,7 @@ CREATE TABLE deteccion_ip.actividad_ips (
     fecha TIMESTAMP DEFAULT NOW(),
     evento VARCHAR(100),
     metadata JSONB,
-    PRIMARY KEY (id, fecha)
+    PRIMARY KEY (fecha,id)
 ) PARTITION BY RANGE (fecha);
 
 DROP TRIGGER IF EXISTS actividad_ips_particiones ON deteccion_ip.actividad_ips;
